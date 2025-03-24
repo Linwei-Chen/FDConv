@@ -14,9 +14,10 @@ The code is being organized.
 - **Fourier Disjoint Weight (FDW):** Constructs frequency-diverse kernels by learning disjoint spectral coefficients, eliminating parameter redundancy.
 - **Kernel Spatial Modulation (KSM):** Dynamically adjusts filter responses at the element-wise level using local-global feature fusion.
 - **Frequency Band Modulation (FBM):** Modulates spatial-frequency bands adaptively for context-aware feature extraction.
-- **Plug-and-Play:** Seamlessly integrates into ConvNets (ResNet, ConvNeXt) and Transformers (Swin, Mask2Former).
+- **Plug-and-Play:** Seamlessly integrates into ConvNets and Transformers.
 
 ## 📈 Performance Highlights
+
 | Task                  | Method       | Metrics (Improvement)  | Params Cost |
 | --------------------- | ------------ | ---------------------- | ----------- |
 | Object Detection      | Faster R-CNN | AP↑2.2%                | **+3.6M**   |
