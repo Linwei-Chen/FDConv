@@ -17,11 +17,11 @@ The code is being organized.
 - **Plug-and-Play:** Seamlessly integrates into ConvNets (ResNet, ConvNeXt) and Transformers (Swin, Mask2Former).
 
 ## 📈 Performance Highlights
-| Task                  | Backbone   | Metrics (Improvement)  | Params Cost |
-| --------------------- | ---------- | ---------------------- | ----------- |
-| Object Detection      | ResNet-50  | AP↑3.2%                | **+3.6M**   |
-| Instance Segmentation | ConvNeXt-T | AP<sup>mask</sup>↑1.1% | +3.6M       |
-| Semantic Segmentation | Swin-B     | mIoU↑1.0%              | +3.6M       |
+| Task                  | Method       | Metrics (Improvement)  | Params Cost |
+| --------------------- | ------------ | ---------------------- | ----------- |
+| Object Detection      | Faster R-CNN | AP↑2.2%                | **+3.6M**   |
+| Instance Segmentation | Mask R-CNN   | AP<sup>mask</sup>↑2.8% | +3.6M       |
+| Semantic Segmentation | UPerNet      | mIoU↑3.1%              | +3.6M       |
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
 
