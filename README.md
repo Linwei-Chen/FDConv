@@ -5,7 +5,7 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 The code is being organized.
 
-[![Paper](https://img.shields.io/badge/Paper-CVPR%202025-blue)](https://arxiv.org/abs/XXXX.XXXX) 
+[![Paper](https://img.shields.io/badge/Paper-CVPR%202025-blue)](https://arxiv.org/abs/2503.18783) ←*click here to read the paper~*
 
 ![FDConv Overview](./assets/method.png)
 
