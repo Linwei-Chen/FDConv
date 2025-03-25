@@ -21,7 +21,7 @@ The code is being organized.
 | Task                  | Method       | Metrics (Improvement)  | Params Cost |
 | --------------------- | ------------ | ---------------------- | ----------- |
 | Object Detection      | Faster R-CNN | AP↑2.2%                | **+3.6M**   |
-| Instance Segmentation | Mask R-CNN   | AP<sup>mask</sup>↑2.8% | +3.6M       |
+| Instance Segmentation | Mask R-CNN   | AP<sup>mask</sup>↑2.2% | +3.6M       |
 | Semantic Segmentation | UPerNet      | mIoU↑3.1%              | +3.6M       |
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
