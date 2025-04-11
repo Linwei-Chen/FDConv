@@ -3,7 +3,9 @@
 **[CVPR 2025]** Official implementation of *Frequency Dynamic Convolution for Dense Image Prediction*.  
 FDConv enhances dynamic convolution by learning frequency-diverse weights in the Fourier domain, achieving state-of-the-art performance with minimal parameter overhead.
 
-The code is being organized.
+The code is being organized, and will be released in 3 month.
+
+
 
 [![Paper](https://img.shields.io/badge/Paper-CVPR%202025-blue)](https://arxiv.org/abs/2503.18783) ←*click here to read the paper~*
 
