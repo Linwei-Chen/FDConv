@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 from numpy.linalg import matrix_rank
 from torch.utils.checkpoint import checkpoint
 
-from mmcv.cnn import CONV_LAYERS
+# from mmcv.cnn import CONV_LAYERS
 from torch import Tensor
 import torch.nn.functional as F
 import math
-from timm.models.layers import trunc_normal_
+# from timm.models.layers import trunc_normal_
 
 
 class StarReLU(nn.Module):
@@ -464,7 +464,7 @@ def get_fft2freq(d1, d2, use_rfft=False):
         plt.show()
     return sorted_coords.permute(1, 0), freq_hw
 
-@CONV_LAYERS.register_module()
+# @CONV_LAYERS.register_module() # for mmdet, mmseg
 class FDConv(nn.Conv2d):
     def __init__(self, 
                  *args, 
