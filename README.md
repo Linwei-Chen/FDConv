@@ -35,10 +35,10 @@ You can install mmdet following the guidence of [mmdetection](https://github.com
 ## 🏎️ Quick Start
 
 ```python
-from fdconv import FDConv
+from FDConv import FDConv
 
 # Replace standard convolution in your model
-model.conv = FDConv(in_channels=64, out_channels=64, kernel_size=3, n_freq_groups=64)
+model.conv = FDConv(in_channels=64, out_channels=64, kernel_size=3, kernel_num=64)
 ```
 
 ## 📖 Citation
