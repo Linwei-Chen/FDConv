@@ -5,11 +5,13 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 The code is being organized, and will be released in 3 month.
 
-
-
 [![Paper](https://img.shields.io/badge/Paper-CVPR%202025-blue)](https://arxiv.org/abs/2503.18783) ←*click here to read the paper~*
 
 ![FDConv Overview](./assets/method.png)
+
+## 📰News
+
+- 2025.7.5 Code for converting ImageNet pretrained weight to FDConv weight.
 
 ## 🚀 Key Features
 
