@@ -41,15 +41,81 @@ from FDConv import FDConv
 model.conv = FDConv(in_channels=64, out_channels=64, kernel_size=3, kernel_num=64)
 ```
 
+## 🔄 Using Pre-trained Models with FDConv
+
+The FDConv layer replaces standard nn.Conv2d or nn.Linear layers. To leverage official pre-trained weights (e.g., from ImageNet), you must first convert their standard spatial-domain weights into our Fourier-domain format (.dft_weight). We provide a versatile script to automate this process.
+
+### The Conversion Script
+
+The script tools/convert_to_fdconv.py handles the conversion. It loads a standard checkpoint, identifies target layers based on the specified model architecture, transforms their weights using 2D Fast Fourier Transform (FFT), and saves a new checkpoint compatible with models using FDConv.
+
+### Usage
+
+The general command is:
+
+```
+python tools/convert_to_fdconv.py \
+    --model_type <MODEL_TYPE> \
+    --weight_path <PATH_TO_ORIGINAL_WEIGHTS> \
+    --save_path <PATH_TO_SAVE_CONVERTED_WEIGHTS>
+```
+
+- --model_type: Specify the architecture. Currently supported: resnet for ResNet-like models, and mit for Mix Transformer models (like SegFormer).
+- --weight_path: Path to the downloaded official pre-trained weights.
+- --save_path: Path where the new, converted weights will be saved.
+
+### Examples
+
+#### Example 1: Converting a ResNet-18 Model
+
+To convert an official ImageNet pre-trained ResNet-18 model for use with FDConv:
+
+1. Download the official ResNet-18 weights (e.g., resnet18-fbbb1da6.pth).
+2. Run the conversion script:
+
+Generated bash
+
+```
+python tools/convert_to_fdconv.py \
+    --model_type resnet \
+    --weight_path /path/to/your/resnet18-fbbb1da6.pth \
+    --save_path /path/to/your/resnet18_fdconv.pth
+```
+
+This will find weights like layer1.0.conv1.weight, convert them to layer1.0.conv1.dft_weight, and save the complete modified state dictionary to resnet18_fdconv.pth.
+
+#### Example 2: Converting a SegFormer (MiT-B0) Model
+
+Transformer-based models like SegFormer use linear layers in their Feed-Forward Networks (FFNs), which can be replaced by FDConv (as 1x1 convolutions).
+
+1. Download the pre-trained MiT-B0 weights (e.g., mit_b0.pth).
+2. Run the script with mit type:
+
+Generated bash
+
+```
+python tools/convert_to_fdconv.py \
+    --model_type vit \
+    --weight_path /path/to/your/mit_b0.pth \
+    --save_path /path/to/your/mit_b0_fdconv.pth
+```
+
+This will target the FFN linear layers (e.g., block1.0.ffn.layers.0.0.weight), convert them, and save the new checkpoint.
+
+After conversion, you can load the generated .pth file into your model architecture where standard layers have been replaced by FDConv.
+
+
+
 ## 📖 Citation
 
 If you find this work useful, please cite:
 
 ```
-@InProceedings{chen2025fdconv,
+@inproceedings{chen2025frequency,
   title={Frequency Dynamic Convolution for Dense Image Prediction},
   author={Chen, Linwei and Gu, Lin and Li, Liang and Yan, Chenggang and Fu, Ying},
-  booktitle={CVPR},
+  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
+  pages={30178--30188},
   year={2025}
 }
 ```
@@ -60,4 +126,4 @@ This code is built using [mmsegmentation](https://github.com/open-mmlab/mmsegmen
 
 ## Contact
 
-If you encounter any problems or bugs, please don't hesitate to contact me at [chenlinwei@bit.edu.cn](mailto:chenlinwei@bit.edu.cn). To ensure effective assistance, please provide a brief self-introduction, including your name, affiliation, and position. If you would like more in-depth help, feel free to provide additional information such as your personal website link. I would be happy to discuss with you and offer support.
+If you encounter any problems or bugs, please don't hesitate to contact me at [chenlinwei@bit.edu.cn](chenlinwei@bit.edu.cn), [charleschen2013@163.com](charleschen2013@163.com). To ensure effective assistance, please provide a brief self-introduction, including your name, affiliation, and position. If you would like more in-depth help, feel free to provide additional information such as your personal website link. I would be happy to discuss with you and offer support.
