@@ -14,7 +14,7 @@ from torch import Tensor
 import torch.nn.functional as F
 import math
 # from timm.models.layers import trunc_normal_
-
+import time
 
 class StarReLU(nn.Module):
     """
@@ -321,10 +321,14 @@ class KernelSpatialModulation_Local(nn.Module):
         return att_logit
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 class FrequencyBandModulation(nn.Module):
     def __init__(self, 
                 in_channels,
-                k_list=[2,4,8],
+                k_list=[2],
                 lowfreq_att=False,
                 fs_feat='feat',
                 act='sigmoid',
@@ -332,100 +336,149 @@ class FrequencyBandModulation(nn.Module):
                 spatial_group=1,
                 spatial_kernel=3,
                 init='zero',
+                max_size=(64, 64), # 预计算mask的最大尺寸
                 **kwargs,
                 ):
         super().__init__()
-        # k_list.sort()
-        # print()
         self.k_list = k_list
-        # self.freq_list = freq_list
-        self.lp_list = nn.ModuleList()
-        self.freq_weight_conv_list = nn.ModuleList()
-        self.fs_feat = fs_feat
-        self.in_channels = in_channels
-        # self.residual = residual
-        if spatial_group > 64: spatial_group=in_channels
-        self.spatial_group = spatial_group
         self.lowfreq_att = lowfreq_att
+        self.in_channels = in_channels
+        self.fs_feat = fs_feat
+        self.act = act
+
+        if spatial_group > 64: 
+            spatial_group = in_channels
+        self.spatial_group = spatial_group
+
+        # 构建注意力卷积层 (这部分逻辑不变)
         if spatial == 'conv':
             self.freq_weight_conv_list = nn.ModuleList()
             _n = len(k_list)
-            if lowfreq_att:  _n += 1
+            if lowfreq_att:
+                _n += 1
             for i in range(_n):
-                freq_weight_conv = nn.Conv2d(in_channels=in_channels, 
-                                            out_channels=self.spatial_group, 
-                                            stride=1,
-                                            kernel_size=spatial_kernel, 
-                                            groups=self.spatial_group,
-                                            padding=spatial_kernel//2, 
-                                            bias=True)
+                freq_weight_conv = nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=self.spatial_group,
+                    stride=1,
+                    kernel_size=spatial_kernel,
+                    groups=self.spatial_group,
+                    padding=spatial_kernel // 2,
+                    bias=True
+                )
                 if init == 'zero':
                     nn.init.normal_(freq_weight_conv.weight, std=1e-6)
-                    freq_weight_conv.bias.data.zero_()   
-                else:
-                    # raise NotImplementedError
-                    pass
+                    if freq_weight_conv.bias is not None:
+                        freq_weight_conv.bias.data.zero_()
                 self.freq_weight_conv_list.append(freq_weight_conv)
+            # freq_weight_conv = nn.Conv2d(
+            #         in_channels=in_channels,
+            #         out_channels=self.spatial_group * _n,
+            #         stride=1,
+            #         kernel_size=spatial_kernel,
+            #         groups=self.spatial_group,
+            #         padding=spatial_kernel // 2,
+            #         bias=True
+            #     )
+            # if init == 'zero':
+            #     nn.init.normal_(freq_weight_conv.weight, std=1e-6)
+            #     if freq_weight_conv.bias is not None:
+            #         freq_weight_conv.bias.data.zero_()
         else:
             raise NotImplementedError
-        self.act = act
+            
+        # 【优化核心】预计算并缓存不同频率的mask
+        self.register_buffer('cached_masks', self._precompute_masks(max_size, k_list))
+
+    def _precompute_masks(self, max_size, k_list):
+        """
+        在初始化时预先计算一组最大尺寸的掩码。
+        """
+        max_h, max_w = max_size
+        _, freq_indices = get_fft2freq(d1=max_h, d2=max_w, use_rfft=True)
+        # print(freq_indices.shape)
+        # print(freq_indices)
+        freq_indices = freq_indices.abs().max(dim=-1, keepdims=False)[0] # (max_h, max_w//2 + 1)
+        # print(freq_indices)
+        
+        # freq_list = [0, *[0.5 / freq for freq in k_list], 0.5]
+        masks = []
+        for freq in k_list:
+            # 创建一个布尔掩码
+            mask = freq_indices < 0.5 / freq + 1e-8
+            # print(freq)
+            # print(mask)
+            masks.append(mask)
+        
+        # 将列表堆叠成一个张量 (num_masks, max_h, max_w//2 + 1)
+        # 增加一个维度以方便广播
+        return torch.stack(masks, dim=0).unsqueeze(1) # (num_masks, 1, max_h, max_w//2 + 1)
 
     def sp_act(self, freq_weight):
+        # (这部分逻辑不变)
         if self.act == 'sigmoid':
-            freq_weight = freq_weight.sigmoid() * 2
+            return freq_weight.sigmoid() * 2
         elif self.act == 'tanh':
-            freq_weight = 1 + freq_weight.tanh()
+            return 1 + freq_weight.tanh()
         elif self.act == 'softmax':
-            freq_weight = freq_weight.softmax(dim=1) * freq_weight.shape[1]
+            return freq_weight.softmax(dim=1) * freq_weight.shape[1]
         else:
             raise NotImplementedError
-        return freq_weight
 
     def forward(self, x, att_feat=None):
-        """
-        att_feat:feat for gen att
-        """
-        if att_feat is None: att_feat = x
+        if att_feat is None:
+            att_feat = x
+            
         x_list = []
         x = x.to(torch.float32)
         pre_x = x.clone()
         b, _, h, w = x.shape
-        h, w = int(h), int(w)
-        # x_fft = torch.fft.fftshift(torch.fft.fft2(x, norm='ortho'))
+        
+        # x_fft = torch.fft.rfft2(x, norm='ortho').contiguous()
+        # 移除了 .contiguous()，因为rfft2的输出通常是连续的。如果遇到性能问题可以再加回来。
         x_fft = torch.fft.rfft2(x, norm='ortho')
+        
+        # 【优化核心】获取并调整缓存的mask大小
+        # 将缓存的mask插值到当前特征图的频域尺寸
+        # 注意频域尺寸是 (h, w//2 + 1)
+        freq_h, freq_w = h, w // 2 + 1
+        
+        # 将mask从 (num_masks, 1, max_h, max_w//2+1) 转为 (num_masks, 1, h, w//2+1)
+        # 使用 nearest 插值，因为它对于0/1掩码来说既快速又准确
+        current_masks = F.interpolate(self.cached_masks.float(), size=(freq_h, freq_w), mode='nearest')
 
         for idx, freq in enumerate(self.k_list):
-            mask = torch.zeros_like(x_fft[:, 0:1, :, :], device=x.device)
-            _, freq_indices = get_fft2freq(d1=x.size(-2), d2=x.size(-1), use_rfft=True)
-            # mask[:,:,round(h/2 - h/(2 * freq)):round(h/2 + h/(2 * freq)), round(w/2 - w/(2 * freq)):round(w/2 + w/(2 * freq))] = 1.0
-            # print(freq_indices.shape)
-            freq_indices = freq_indices.max(dim=-1, keepdims=False)[0]
-            # print(freq_indices)
-            mask[:,:, freq_indices < 0.5 / freq] = 1.0
-            # print(mask.sum())
-            # low_part = torch.fft.ifft2(torch.fft.ifftshift(x_fft * mask), norm='ortho').real
-            low_part = torch.fft.irfft2(x_fft * mask, s=(h, w), dim=(-2, -1), norm='ortho')
-            try: 
-                low_part = low_part.real
-            except:
-                pass
+            # 直接从缓存中获取mask
+            mask = current_masks[idx]
+
+            # 应用掩码并进行逆傅里叶变换
+            # `s=(h,w)` 确保 irfft2 的输出尺寸与原始 `x` 匹配
+            low_part = torch.fft.irfft2(x_fft * mask, s=(h, w), norm='ortho')
+
             high_part = pre_x - low_part
             pre_x = low_part
+            
+            # 注意力计算部分不变
             freq_weight = self.freq_weight_conv_list[idx](att_feat)
             freq_weight = self.sp_act(freq_weight)
-            # tmp = freq_weight[:, :, idx:idx+1] * high_part.reshape(b, self.spatial_group, -1, h, w)
-            tmp = freq_weight.reshape(b, self.spatial_group, -1, h, w) * high_part.reshape(b, self.spatial_group, -1, h, w)
+            
+            # 将注意力权重和高频部分相乘
+            # 重塑形状以进行广播
+            tmp = freq_weight.reshape(b, self.spatial_group, -1, h, w) * \
+                  high_part.reshape(b, self.spatial_group, -1, h, w)
             x_list.append(tmp.reshape(b, -1, h, w))
+            
+        # 处理低频部分
         if self.lowfreq_att:
-            freq_weight = self.freq_weight_conv_list[len(x_list)](att_feat)
+            freq_weight = self.freq_weight_conv_list[len(self.k_list)](att_feat)
             freq_weight = self.sp_act(freq_weight)
-            # tmp = freq_weight[:, :, len(x_list):len(x_list)+1] * pre_x.reshape(b, self.spatial_group, -1, h, w)
-            tmp = freq_weight.reshape(b, self.spatial_group, -1, h, w) * pre_x.reshape(b, self.spatial_group, -1, h, w)
+            tmp = freq_weight.reshape(b, self.spatial_group, -1, h, w) * \
+                  pre_x.reshape(b, self.spatial_group, -1, h, w)
             x_list.append(tmp.reshape(b, -1, h, w))
         else:
             x_list.append(pre_x)
-        x = sum(x_list)
-        return x
+            
+        return sum(x_list)
 
 def get_fft2freq(d1, d2, use_rfft=False):
     # Frequency components for rows and columns
@@ -464,7 +517,7 @@ def get_fft2freq(d1, d2, use_rfft=False):
         plt.show()
     return sorted_coords.permute(1, 0), freq_hw
 
-# @CONV_LAYERS.register_module() # for mmdet, mmseg
+@CONV_LAYERS.register_module() # for mmdet, mmseg
 class FDConv(nn.Conv2d):
     def __init__(self, 
                  *args, 
@@ -566,15 +619,17 @@ class FDConv(nn.Conv2d):
             del self.weight
         else:
             if self.linear_mode:
+                assert self.kernel_size[0] == 1 and self.kernel_size[1] == 1
                 self.weight = torch.nn.Parameter(self.weight.squeeze(), requires_grad=True)
-        self.indices = []
+        indices = []
         for i in range(self.param_ratio):
-            self.indices.append(freq_indices.reshape(2, self.kernel_num, -1)) # paramratio, 2, kernel_num, d1 * k1 * (d2 * k2 // 2 + 1) // kernel_num
+            indices.append(freq_indices.reshape(2, self.kernel_num, -1)) # paramratio, 2, kernel_num, d1 * k1 * (d2 * k2 // 2 + 1) // kernel_num
+        self.register_buffer('indices', torch.stack(indices, dim=0), persistent=False)
 
     def get_FDW(self, ):
         d1, d2, k1, k2 = self.out_channels, self.in_channels, self.kernel_size[0], self.kernel_size[1]
         weight = self.weight.reshape(d1, d2, k1, k2).permute(0, 2, 1, 3).reshape(d1 * k1, d2 * k2)
-        weight_rfft = torch.fft.rfft2(weight, dim=(0, 1)) # d1 * k1, d2 * k2 // 2 + 1
+        weight_rfft = torch.fft.rfft2(weight, dim=(0, 1)).contiguous() # d1 * k1, d2 * k2 // 2 + 1
         weight_rfft = torch.stack([weight_rfft.real, weight_rfft.imag], dim=-1)[None, ].repeat(self.param_ratio, 1, 1, 1) / (min(self.out_channels, self.in_channels) // 2) #param_ratio, d1, d2, k*k, 2
         return weight_rfft
         
@@ -605,8 +660,12 @@ class FDConv(nn.Conv2d):
             dft_weight = self.dft_weight
         else:
             dft_weight = self.get_FDW()
+            # print('get_FDW')
 
+        # _t0 = time.perf_counter()
         for i in range(self.param_ratio):
+            # print(i)
+            # print(DFT_map.device)
             indices = self.indices[i]
             if self.param_reduction < 1:
                 w = dft_weight[i].reshape(self.kernel_num, -1, 2)[None]
@@ -615,7 +674,8 @@ class FDConv(nn.Conv2d):
                 w = dft_weight[i][indices[0, :, :], indices[1, :, :]][None] * self.alpha # 1, kernel_num, -1, 2
                 # print(w.shape)
                 DFT_map[:, indices[0, :, :], indices[1, :, :]] += torch.stack([w[..., 0] * kernel_attention[:, i], w[..., 1] * kernel_attention[:, i]], dim=-1)
-
+                pass
+        # print(time.perf_counter() - _t0)
         adaptive_weights = torch.fft.irfft2(torch.view_as_complex(DFT_map), dim=(1, 2)).reshape(batch_size, 1, self.out_channels, self.kernel_size[0], self.in_channels, self.kernel_size[1])
         adaptive_weights = adaptive_weights.permute(0, 1, 2, 4, 3, 5)
         # print(spatial_attention, channel_attention, filter_attention)
@@ -676,4 +736,13 @@ class FDConv(nn.Conv2d):
             return input, params, macs + m_ff
 
 if __name__ == '__main__':
+    x = torch.rand(4, 128, 64, 64) * 1
+    # m = ODPEConv2d(in_channels=128, out_channels=128, kernel_num=8, kernel_size=3, padding=1, mirror_weight=False, weight_residual=False, use_rfft=True)
+    # m = ODPEAdaptConv2d(in_channels=128, out_channels=64, kernel_num=8, kernel_size=3, padding=1, mirror_weight=False, weight_residual=False, use_rfft=True, bias=True, param_ratio=4, omni_only_kernel_att=False, use_hr_att=False, att_grid=1, stride=2, spatial_freq_decompose=False)
+    m = FDConv(in_channels=128, out_channels=64, kernel_num=8, kernel_size=3, padding=1, bias=True)
+    # m2 = DFT_Att(n=128)
+    print(m)
+    # m.convert2dftweight()
+    y = m(x)
+    print(y.shape)
     pass
