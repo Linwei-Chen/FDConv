@@ -11,6 +11,7 @@ The code is being organized, and will be released in 3 month.
 
 ## 📰News
 
+- 2025.7.14 Code for training with mmdet using FDConv.
 - 2025.7.5 Code for converting ImageNet pretrained weight to FDConv weight.
 
 ## 🚀 Key Features
