@@ -32,7 +32,7 @@ The code is being organized, and will be released in 3 month.
 
 ## 🛠 Installation
 
-You can install mmdet following the guidence of [mmdetection](https://github.com/open-mmlab/mmdetection/tree/dev-2.x).
+You can install mmdet following the guidence of [mmdetection](https://github.com/open-mmlab/mmdetection/tree/dev-2.x) [Installation](https://mmdetection.readthedocs.io/en/v2.8.0/get_started.html#installation).
 
 ## 🏎️ Quick Start
 
