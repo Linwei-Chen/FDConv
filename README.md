@@ -29,6 +29,15 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
 
+## 🏎️ Quick Start
+
+```python
+from FDConv import FDConv
+
+# Replace standard convolution in your model
+model.conv = FDConv(in_channels=64, out_channels=64, kernel_size=3, kernel_num=64)
+```
+
 ## 🛠 Installation
 
 You can install mmdet as third party library following the guidence of [mmdetection](https://github.com/open-mmlab/mmdetection/tree/dev-2.x) [Installation](https://mmdetection.readthedocs.io/en/v2.8.0/get_started.html#installation).
@@ -56,14 +65,7 @@ local_path_to/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py \
 --cfg-options model.backbone.init_cfg.checkpoint='local_path_to/resnet50_Convert2FDConv.pth'
 ```
 
-## 🏎️ Quick Start
-
-```python
-from FDConv import FDConv
-
-# Replace standard convolution in your model
-model.conv = FDConv(in_channels=64, out_channels=64, kernel_size=3, kernel_num=64)
-```
+You can obtain resnet50_Convert2FDConv.pth by using the script bellow, or download from [here](https://pan.baidu.com/s/1lKfNNEjJUYGsBRTEXjCVvQ?pwd=CVPR).
 
 ## 🔄 Using Pre-trained Models with FDConv
 
