@@ -23,8 +23,8 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 | Task                  | Method                                                       | Metrics (Improvement)  | Params Cost |
 | --------------------- | ------------------------------------------------------------ | ---------------------- | ----------- |
-| Object Detection      | Faster R-CNN ([config](./FDConv_detection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py)) | AP↑2.2%                | **+3.6M**   |
-| Instance Segmentation | Mask R-CNN ([config](./FDConv_detection/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco_adamw_FDConv.py)) | AP<sup>mask</sup>↑2.2% | +3.6M       |
+| Object Detection      | Faster R-CNN ([config](./FDConv_detection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py), [download](https://pan.baidu.com/s/1qsKrf8FvnvaURQN8u7BxQA?pwd=CVPR)) | AP↑2.2%                | **+3.6M**   |
+| Instance Segmentation | Mask R-CNN ([config](./FDConv_detection/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco_adamw_FDConv.py), [download](https://pan.baidu.com/s/1YbKppkjEyfm4LeWXE56WHw?pwd=CVPR)) | AP<sup>mask</sup>↑2.2% | +3.6M       |
 | Semantic Segmentation | UPerNet                                                      | mIoU↑3.1%              | +3.6M       |
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
@@ -45,6 +45,8 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 | **+ FDConv (Ours)** | **+3.6M**               | **+1.8G** | **42.4**         | 38.6              |
 
 ## 🏎️ Quick Start
+
+Code of FDConv is [here](./FDConv_detection/mmdet_custom/FDConv.py)
 
 ```python
 from FDConv import FDConv
@@ -73,7 +75,7 @@ pip install mmcv-full==2.28.1
 
 ```
 conda activate FDConv_mmdet
-CUDA_VISIBLE_DEVICES=0,1 local_path_to/tools/dist_train.sh \
+CUDA_VISIBLE_DEVICES=0,1 local_path_to/dist_train.sh \
 local_path_to/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py \
 2 \
 --work-dir local_path_to/save_dir \
@@ -81,6 +83,18 @@ local_path_to/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py \
 ```
 
 You can obtain resnet50_Convert2FDConv.pth by using the script bellow, or download from [here](https://pan.baidu.com/s/1lKfNNEjJUYGsBRTEXjCVvQ?pwd=CVPR).
+
+## 🙇Testing
+
+```
+conda activate FDConv_mmdet
+CUDA_VISIBLE_DEVICES=0,1,2,3 /local_path_to/dist_test.sh \
+local_path_to/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco_adamw_FDConv.py \
+local_path_to/checkpoint.pth 4 \
+--eval bbox segm
+```
+
+
 
 ## 🔄 Using Pre-trained Models with FDConv
 
