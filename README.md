@@ -31,7 +31,30 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 ## 🛠 Installation
 
-You can install mmdet following the guidence of [mmdetection](https://github.com/open-mmlab/mmdetection/tree/dev-2.x) [Installation](https://mmdetection.readthedocs.io/en/v2.8.0/get_started.html#installation).
+You can install mmdet as third party library following the guidence of [mmdetection](https://github.com/open-mmlab/mmdetection/tree/dev-2.x) [Installation](https://mmdetection.readthedocs.io/en/v2.8.0/get_started.html#installation).
+
+```
+conda create -n FDConv_mmdet python=3.7 -y
+conda activate FDConv_mmdet
+# install torch
+pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+# install mmcv
+pip install mmcv-full==1.5.3 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11/index.html
+# install mmdet
+pip install -r ./requirements.txt
+pip install mmcv-full==2.28.1
+```
+
+## 🚞 Training
+
+```
+conda activate FDConv_mmdet
+CUDA_VISIBLE_DEVICES=0,1 local_path_to/tools/dist_train.sh \
+local_path_to/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py \
+2 \
+--work-dir local_path_to/save_dir \
+--cfg-options model.backbone.init_cfg.checkpoint='local_path_to/resnet50_Convert2FDConv.pth'
+```
 
 ## 🏎️ Quick Start
 
