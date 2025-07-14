@@ -21,11 +21,11 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 ## 📈 Performance Highlights
 
-| Task                  | Method       | Metrics (Improvement)  | Params Cost |
-| --------------------- | ------------ | ---------------------- | ----------- |
-| Object Detection      | Faster R-CNN | AP↑2.2%                | **+3.6M**   |
-| Instance Segmentation | Mask R-CNN   | AP<sup>mask</sup>↑2.2% | +3.6M       |
-| Semantic Segmentation | UPerNet      | mIoU↑3.1%              | +3.6M       |
+| Task                  | Method                                                       | Metrics (Improvement)  | Params Cost |
+| --------------------- | ------------------------------------------------------------ | ---------------------- | ----------- |
+| Object Detection      | Faster R-CNN ([config](./FDConv_detection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_FDConv.py)) | AP↑2.2%                | **+3.6M**   |
+| Instance Segmentation | Mask R-CNN ([config](./FDConv_detection/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco_adamw_FDConv.py)) | AP<sup>mask</sup>↑2.2% | +3.6M       |
+| Semantic Segmentation | UPerNet                                                      | mIoU↑3.1%              | +3.6M       |
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
 
