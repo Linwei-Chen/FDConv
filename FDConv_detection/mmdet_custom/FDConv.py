@@ -415,7 +415,6 @@ class FrequencyBandModulation(nn.Module):
         return torch.stack(masks, dim=0).unsqueeze(1) # (num_masks, 1, max_h, max_w//2 + 1)
 
     def sp_act(self, freq_weight):
-        # (这部分逻辑不变)
         if self.act == 'sigmoid':
             return freq_weight.sigmoid() * 2
         elif self.act == 'tanh':
@@ -435,7 +434,6 @@ class FrequencyBandModulation(nn.Module):
         b, _, h, w = x.shape
         
         # x_fft = torch.fft.rfft2(x, norm='ortho').contiguous()
-        # 移除了 .contiguous()，因为rfft2的输出通常是连续的。如果遇到性能问题可以再加回来。
         x_fft = torch.fft.rfft2(x, norm='ortho')
         
         # 【优化核心】获取并调整缓存的mask大小
