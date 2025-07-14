@@ -84,7 +84,7 @@ python tools/convert_to_fdconv.py \
     --save_path <PATH_TO_SAVE_CONVERTED_WEIGHTS>
 ```
 
-- --model_type: Specify the architecture. Currently supported: resnet for ResNet-like models, and mit for Mix Transformer models (like SegFormer).
+- --model_type: Specify the architecture. Currently supported: resnet for ResNet-like models, and vit for Transformer models (like SegFormer).
 - --weight_path: Path to the downloaded official pre-trained weights.
 - --save_path: Path where the new, converted weights will be saved.
 
@@ -96,8 +96,6 @@ To convert an official ImageNet pre-trained ResNet-18 model for use with FDConv:
 
 1. Download the official ResNet-18 weights (e.g., resnet18-fbbb1da6.pth).
 2. Run the conversion script:
-
-Generated bash
 
 ```
 python tools/convert_to_fdconv.py \
@@ -113,9 +111,7 @@ This will find weights like layer1.0.conv1.weight, convert them to layer1.0.conv
 Transformer-based models like SegFormer use linear layers in their Feed-Forward Networks (FFNs), which can be replaced by FDConv (as 1x1 convolutions).
 
 1. Download the pre-trained MiT-B0 weights (e.g., mit_b0.pth).
-2. Run the script with mit type:
-
-Generated bash
+2. Run the script with vit type:
 
 ```
 python tools/convert_to_fdconv.py \
