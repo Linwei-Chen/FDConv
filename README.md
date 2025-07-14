@@ -29,6 +29,21 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 **Outperforms CondConv (+90M), DY-Conv (+75M), and ODConv (+65M) with 1/20 parameters!**
 
+| Models              | Params                  | FLOPs     | AP<sup>box</sup> | AP<sup>mask</sup> |
+| ------------------- | ----------------------- | --------- | ---------------- | ----------------- |
+| **Faster R-CNN**    | 43.80<sub>(23.5)</sub>M | 207.1G    | 37.2             | —                 |
+| + CondConv (8×)     | +90.0M                  | +0.01G    | 38.1             | —                 |
+| + DY-Conv (4×)      | +75.3M                  | +0.16G    | 38.3             | —                 |
+| + DCD               | +4.3M                   | +0.13G    | 38.1             | —                 |
+| + ODConv (4×)       | +65.1M                  | +0.35G    | 39.2             | —                 |
+| **+ FDConv (Ours)** | **+3.6M**               | **+1.8G** | **39.4**         | —                 |
+| **Mask R-CNN**      | 46.5<sub>(23.5)</sub>M  | 260.1G    | 39.6             | 36.4              |
+| + DY-Conv (4×)      | +75.3M                  | +0.16G    | 39.6             | 36.6              |
+| + ODConv (4×)       | +65.1M                  | +0.35G    | 42.1             | 38.6              |
+| + KW (1×)           | +2.5M                   | —         | 41.8             | 38.4              |
+| + KW (4×)           | +76.5M                  | —         | 42.4             | **38.9**          |
+| **+ FDConv (Ours)** | **+3.6M**               | **+1.8G** | **42.4**         | 38.6              |
+
 ## 🏎️ Quick Start
 
 ```python
