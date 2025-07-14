@@ -9,8 +9,8 @@ FDConv enhances dynamic convolution by learning frequency-diverse weights in the
 
 ## 📰News
 
-- 2025.7.14 Code for training with mmdet using FDConv.
-- 2025.7.5 Code for converting ImageNet pretrained weight to FDConv weight.
+- 2025.7.14 Code for training with mmdet using FDConv ([here](./FDConv_detection)).
+- 2025.7.5 Code for converting ImageNet pretrained weight to FDConv weight ([here](./tools)).
 
 ## 🚀 Key Features
 
