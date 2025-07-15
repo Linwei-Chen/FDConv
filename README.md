@@ -94,8 +94,6 @@ local_path_to/checkpoint.pth 4 \
 --eval bbox segm
 ```
 
-
-
 ## 🔄 Using Pre-trained Models with FDConv
 
 The FDConv layer replaces standard nn.Conv2d or nn.Linear layers. To leverage official pre-trained weights (e.g., from ImageNet), you must first convert their standard spatial-domain weights into our Fourier-domain format (.dft_weight). We provide a versatile script to automate this process.
@@ -121,18 +119,18 @@ python tools/convert_to_fdconv.py \
 
 ### Examples
 
-#### Example 1: Converting a ResNet-18 Model
+#### Example 1: Converting a ResNet-50 Model
 
-To convert an official ImageNet pre-trained ResNet-18 model for use with FDConv:
+To convert an official ImageNet pre-trained ResNet-50 model for use with FDConv:
 
-1. Download the official ResNet-18 weights (e.g., resnet18-fbbb1da6.pth).
+1. Download the official ResNet-50 weights ([here](https://download.pytorch.org/models/resnet50-0676ba61.pth)).
 2. Run the conversion script:
 
 ```
 python tools/convert_to_fdconv.py \
     --model_type resnet \
-    --weight_path /path/to/your/resnet18-fbbb1da6.pth \
-    --save_path /path/to/your/resnet18_fdconv.pth
+    --weight_path /path/to/your/resnet50.pth \
+    --save_path /path/to/your/resnet50_fdconv.pth
 ```
 
 This will find weights like layer1.0.conv1.weight, convert them to layer1.0.conv1.dft_weight, and save the complete modified state dictionary to resnet18_fdconv.pth.
