@@ -136,7 +136,7 @@ optimizer = dict(
 
 lr_config = dict(
     # warmup_ratio=0.0001,
-    step=[9, 11]
+    step=[10, 11]
     )
 runner = dict(type='EpochBasedRunner', max_epochs=12)
 # find_unused_parameters = True
