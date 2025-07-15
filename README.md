@@ -68,7 +68,7 @@ pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.py
 pip install mmcv-full==1.5.3 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11/index.html
 # install mmdet
 pip install -r ./requirements.txt
-pip install mmcv-full==2.28.1
+pip install mmdet==2.28.1
 ```
 
 ## 🚞 Training
