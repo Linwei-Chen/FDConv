@@ -109,7 +109,7 @@ optimizer = dict(
             'absolute_pos_embed': dict(decay_mult=0.),
             'relative_position_bias_table': dict(decay_mult=0.),
             'norm': dict(decay_mult=0.),
-            'bias': dict(decay_mult=0.),
+            # 'bias': dict(decay_mult=0.),
             # 'attention': dict(lr_mult=2.),
             # 'dft': dict(lr_mult=KERNEL_NUM),
             }))
@@ -136,7 +136,7 @@ optimizer = dict(
 
 lr_config = dict(
     # warmup_ratio=0.0001,
-    step=[8, 11]
+    step=[9, 11]
     )
 runner = dict(type='EpochBasedRunner', max_epochs=12)
 # find_unused_parameters = True
